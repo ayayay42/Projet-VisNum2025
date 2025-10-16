@@ -1,0 +1,13 @@
+
+# Core dependencies required by the project
+# OpenCV (provides `cv2` used for camera capture and image conversion)
+opencv-python>=4.5.5
+# MediaPipe (hand tracking)
+mediapipe>=0.10.0
+# Pygame (game rendering and input)
+pygame>=2.1.0
+# NumPy (commonly used with OpenCV/MediaPipe; some environments require it explicitly)
+numpy>=1.21.0
+
+
+

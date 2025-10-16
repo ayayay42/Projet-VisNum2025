@@ -1,8 +1,8 @@
 import cv2
 import pygame
-from detection_mains.track_main import HandTracker
-from utils.mouvements import get_direction_from_index
-from jeux.snake import SnakeGame
+from hand_detection.hand_tracker import HandTracker
+from utils.movements import get_direction_from_index
+from games.snake import SnakeGame
 
 pygame.init()
 screen = pygame.display.set_mode((800, 600))
