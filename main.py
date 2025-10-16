@@ -24,7 +24,7 @@ def get_camera_data(cap):
 def welcome_screen():
     screen.fill((30, 30, 30))
     title = font.render("Bienvenue au jeu du serpent", True, (255, 255, 255))
-    subtitle = font.render("Pointe l'indew vers la droite pour commencer", True, (0, 255, 0))
+    subtitle = font.render("Pointe l'index vers la droite pour commencer", True, (0, 255, 0))
     screen.blit(title, (100, 200))
     screen.blit(subtitle, (80, 300))
     pygame.display.flip()
