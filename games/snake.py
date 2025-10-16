@@ -1,7 +1,7 @@
 import pygame
 import random
 from .base_game import BaseGame
-from utils.mouvements import detect_open_hand
+from utils.movements import detect_open_hand
 
 class SnakeGame(BaseGame):
     def __init__(self, screen):
