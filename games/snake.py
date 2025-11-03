@@ -7,7 +7,10 @@ class SnakeGame(BaseGame):
     def __init__(self, screen):
         super().__init__(screen)
         self.cell_size = 20
-        self.width, self.height = screen.get_size()
+        self.width, self.height = 800, 600
+        # position where the camera preview will be blitted by the game
+        self.cam_pos = (820, 20)
+        self.cam_surf = None
         self.reset()
 
     def reset(self):
@@ -80,7 +83,18 @@ class SnakeGame(BaseGame):
             pygame.draw.rect(self.screen, (0, 255, 0), (*segment, self.cell_size, self.cell_size))
 
         pygame.draw.rect(self.screen, (255, 0, 0), (*self.food, self.cell_size, self.cell_size))
+        # draw camera preview on top-right (if provided)
+        if self.cam_surf:
+            try:
+                self.screen.blit(self.cam_surf, self.cam_pos)
+            except Exception:
+                # if cam_surf is not a surface or fails, ignore silently
+                pass
 
     def check_restart(self, landmarks):
         if self.game_over and detect_open_hand(landmarks):
             self.reset()
+
+    def set_camera_surface(self, surf):
+        """Set the camera surface to be blitted by the game on each draw call."""
+        self.cam_surf = surf
