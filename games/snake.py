@@ -69,11 +69,13 @@ class SnakeGame(BaseGame):
             pygame.draw.line(self.screen, (40, 40, 40), (0, y), (self.width, y))
 
     def draw(self):
+        font = pygame.font.Font(None, 72)
         self.screen.fill((0, 0, 0))
         self.draw_grid()
+        msg_score = font.render(f"Score: {len(self.snake) - 4}", True, (255, 255, 255))
+        self.screen.blit(msg_score, (820, 300))
 
         if self.game_over:
-            font = pygame.font.Font(None, 72)
             msg = font.render("FIN DU JEU", True, (255, 0, 0))
             sub_font = pygame.font.Font(None, 48)
             sub_msg = sub_font.render("Ouvrez votre main pour recommencer", True, (255, 255, 255))
