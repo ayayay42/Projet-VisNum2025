@@ -74,6 +74,8 @@ class SnakeGame(BaseGame):
             msg = font.render("FIN DU JEU", True, (255, 0, 0))
             sub_font = pygame.font.Font(None, 48)
             sub_msg = sub_font.render("Ouvrez votre main pour recommencer", True, (255, 255, 255))
+
+            self.screen.blit(self.cam_surf, self.cam_pos)
             self.screen.blit(msg, (self.width // 4, self.height // 2 - 40))
             self.screen.blit(sub_msg, (self.width // 5, self.height // 2 + 20))
             pygame.display.flip()
