@@ -8,7 +8,6 @@ class SnakeGame(BaseGame):
         super().__init__(screen)
         self.cell_size = 20
         self.width, self.height = 800, 600
-        # position where the camera preview will be blitted by the game
         self.cam_pos = (820, 20)
         self.cam_surf = None
         self.reset()
@@ -20,6 +19,10 @@ class SnakeGame(BaseGame):
         self.game_over = False
         self.move_delay = 6
         self.frame_count = 0
+        head_x, head_y = 100, 100
+        length = 4
+        self.snake = [(head_x - i * self.cell_size, head_y) for i in range(length)]
+
 
     def update(self, gesture):
         if self.game_over:
@@ -66,14 +69,18 @@ class SnakeGame(BaseGame):
             pygame.draw.line(self.screen, (40, 40, 40), (0, y), (self.width, y))
 
     def draw(self):
+        font = pygame.font.Font(None, 72)
         self.screen.fill((0, 0, 0))
         self.draw_grid()
+        msg_score = font.render(f"Score: {len(self.snake) - 4}", True, (255, 255, 255))
+        self.screen.blit(msg_score, (820, 300))
 
         if self.game_over:
-            font = pygame.font.Font(None, 72)
             msg = font.render("FIN DU JEU", True, (255, 0, 0))
             sub_font = pygame.font.Font(None, 48)
             sub_msg = sub_font.render("Ouvrez votre main pour recommencer", True, (255, 255, 255))
+
+            self.screen.blit(self.cam_surf, self.cam_pos)
             self.screen.blit(msg, (self.width // 4, self.height // 2 - 40))
             self.screen.blit(sub_msg, (self.width // 5, self.height // 2 + 20))
             pygame.display.flip()
@@ -83,13 +90,7 @@ class SnakeGame(BaseGame):
             pygame.draw.rect(self.screen, (0, 255, 0), (*segment, self.cell_size, self.cell_size))
 
         pygame.draw.rect(self.screen, (255, 0, 0), (*self.food, self.cell_size, self.cell_size))
-        # draw camera preview on top-right (if provided)
-        if self.cam_surf:
-            try:
-                self.screen.blit(self.cam_surf, self.cam_pos)
-            except Exception:
-                # if cam_surf is not a surface or fails, ignore silently
-                pass
+        self.screen.blit(self.cam_surf, self.cam_pos)
 
     def check_restart(self, landmarks):
         if self.game_over and detect_open_hand(landmarks):
