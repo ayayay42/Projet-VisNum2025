@@ -4,29 +4,20 @@ import numpy as np
 from hand_detection.hand_tracker import HandTracker
 from utils.movements import get_direction_from_index, hand_present
 from games.snake import SnakeGame
-from evaluator import Evaluator
+
+from utils.stats_tracker import StatsTracker
+from utils.uncertainty import compute_uncertainty
+
+
 
 pygame.init()
+stats = StatsTracker()
+
 screen = pygame.display.set_mode((1200, 600))
 pygame.display.set_caption("Snake")
 
 font = pygame.font.Font(None, 48)
 tracker = HandTracker()
-
-def get_real_gesture_from_keyboard():
-    """Return the gesture the user indicates via the keyboard arrows."""
-    keys = pygame.key.get_pressed()
-
-    if keys[pygame.K_LEFT]:
-        return "LEFT"
-    if keys[pygame.K_RIGHT]:
-        return "RIGHT"
-    if keys[pygame.K_UP]:
-        return "UP"
-    if keys[pygame.K_DOWN]:
-        return "DOWN"
-
-    return "NONE"
 
 
 def frame_to_surface(frame, size=None):
@@ -46,7 +37,10 @@ def get_camera_data(cap, cam_size=(360, 240)):
     landmarks, frame = tracker.get_landmarks(frame)
     gesture = get_direction_from_index(landmarks)
     cam_surf = frame_to_surface(frame, size=cam_size)
-    return landmarks, gesture, cam_surf
+    
+    uncertainty = compute_uncertainty(landmarks)
+    return landmarks, gesture, cam_surf, uncertainty
+
 
 
 def welcome_screen(cap, cam_size=(360, 240)):
@@ -62,7 +56,7 @@ def welcome_screen(cap, cam_size=(360, 240)):
                 cv2.destroyAllWindows()
                 exit()
 
-        landmarks, gesture, cam_surf = get_camera_data(cap, cam_size)
+        landmarks, gesture, cam_surf, uncertainty = get_camera_data(cap, cam_size)
 
         screen.fill((30, 30, 30))
         title = font.render("Bienvenue au jeu du serpent", True, (255, 255, 255))
@@ -121,7 +115,6 @@ cap = cv2.VideoCapture(0)
 welcome_screen(cap)
 
 game = SnakeGame(screen)
-evaluator = Evaluator()
 
 # Game loop
 clock = pygame.time.Clock()
@@ -138,17 +131,32 @@ font_pause = pygame.font.SysFont(None, 80)
 
 PAUSE_TEXT_MAX_WIDTH = screen.get_width() - 200
 
+
+
+
+
+
+
+
+
+
 while running:
+    stats.frame_start()   # start measuring this frame
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    landmarks, gesture, cam_surf = get_camera_data(cap, cam_size)
-    real_gesture = get_real_gesture_from_keyboard()
+    landmarks, gesture, cam_surf, uncertainty = get_camera_data(cap, cam_size)
     game.set_camera_surface(cam_surf)
 
     if not game.game_over:
         is_hand = hand_present(landmarks)
+        
+        uncertainty = compute_uncertainty(landmarks)
+        stats.record_uncertainty(uncertainty, gesture if gesture else "NONE")
+
+        
+        stats.record_gesture(gesture if gesture else "NONE", is_hand)
 
         if not is_hand:
             no_hand_counter += 1
@@ -163,20 +171,11 @@ while running:
 
         if hand_counter >= HAND_FRAMES_TO_RESUME and pause:
             pause = False
-
     else:
         # Reset counters when game is over
         no_hand_counter = 0
         hand_counter = 0
         pause = False
-
-    evaluator.log_frame(
-        hand_detected=is_hand,
-        gesture_detected=gesture if gesture is not None else "NONE",
-        gesture_real=real_gesture,
-        paused=pause,
-        game_over=game.game_over
-    )
 
     if pause:
         game.draw()
@@ -210,6 +209,13 @@ while running:
     pygame.display.flip()
     clock.tick(30)
 
+
+
+
 cap.release()
 cv2.destroyAllWindows()
 pygame.quit()
+
+
+stats.export_csv("results_stats.csv")
+stats.plot_uncertainty("uncertainty_plot.png")
