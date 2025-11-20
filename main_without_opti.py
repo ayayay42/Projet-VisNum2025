@@ -13,6 +13,21 @@ pygame.display.set_caption("Snake")
 font = pygame.font.Font(None, 48)
 tracker = HandTracker()
 
+def get_real_gesture_from_keyboard():
+    """Return the gesture the user indicates via the keyboard arrows."""
+    keys = pygame.key.get_pressed()
+
+    if keys[pygame.K_LEFT]:
+        return "LEFT"
+    if keys[pygame.K_RIGHT]:
+        return "RIGHT"
+    if keys[pygame.K_UP]:
+        return "UP"
+    if keys[pygame.K_DOWN]:
+        return "DOWN"
+
+    return "NONE"
+
 
 def frame_to_surface(frame, size=None):
     if frame is None:
@@ -124,23 +139,27 @@ while running:
             running = False
 
     landmarks, gesture, cam_surf = get_camera_data(cap, cam_size)
+    real_gesture = get_real_gesture_from_keyboard()
     game.set_camera_surface(cam_surf)
 
     if not game.game_over:
+        is_hand = hand_present(landmarks)
 
-        evaluator.log_frame(
-            hand_detected=is_hand,
-            gesture=gesture,
-            paused=pause,
-            game_over=game.game_over)
-
-        if not hand_present(landmarks):
+        if not is_hand:
             pause = True
         else:
             pause = False
 
     else:
         pause = False
+
+    evaluator.log_frame(
+        hand_detected=is_hand,
+        gesture_detected=gesture if gesture is not None else "NONE",
+        gesture_real=real_gesture,
+        paused=pause,
+        game_over=game.game_over
+    )
 
     if pause:
         game.draw()
