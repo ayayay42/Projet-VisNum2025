@@ -13,21 +13,6 @@ pygame.display.set_caption("Snake")
 font = pygame.font.Font(None, 48)
 tracker = HandTracker()
 
-def get_real_gesture_from_keyboard():
-    """Return the gesture the user indicates via the keyboard arrows."""
-    keys = pygame.key.get_pressed()
-
-    if keys[pygame.K_LEFT]:
-        return "LEFT"
-    if keys[pygame.K_RIGHT]:
-        return "RIGHT"
-    if keys[pygame.K_UP]:
-        return "UP"
-    if keys[pygame.K_DOWN]:
-        return "DOWN"
-
-    return "NONE"
-
 
 def frame_to_surface(frame, size=None):
     if frame is None:
@@ -129,11 +114,6 @@ running = True
 pause = False
 cam_size = (360, 240)
 
-NO_HAND_FRAMES_TO_PAUSE = 5    # require 5 consecutive frames with no hand to pause
-HAND_FRAMES_TO_RESUME = 3      # require 3 consecutive frames with a hand to resume
-no_hand_counter = 0
-hand_counter = 0
-
 font_pause = pygame.font.SysFont(None, 80)
 
 PAUSE_TEXT_MAX_WIDTH = screen.get_width() - 200
@@ -144,39 +124,23 @@ while running:
             running = False
 
     landmarks, gesture, cam_surf = get_camera_data(cap, cam_size)
-    real_gesture = get_real_gesture_from_keyboard()
     game.set_camera_surface(cam_surf)
 
     if not game.game_over:
-        is_hand = hand_present(landmarks)
 
-        if not is_hand:
-            no_hand_counter += 1
-            hand_counter = 0
-        else:
-            hand_counter += 1
-            no_hand_counter = 0
+        evaluator.log_frame(
+            hand_detected=is_hand,
+            gesture=gesture,
+            paused=pause,
+            game_over=game.game_over)
 
-        if no_hand_counter >= NO_HAND_FRAMES_TO_PAUSE and not pause:
+        if not hand_present(landmarks):
             pause = True
-            gesture = None  # prevent last gesture from persisting
-
-        if hand_counter >= HAND_FRAMES_TO_RESUME and pause:
+        else:
             pause = False
 
     else:
-        # Reset counters when game is over
-        no_hand_counter = 0
-        hand_counter = 0
         pause = False
-
-    evaluator.log_frame(
-        hand_detected=is_hand,
-        gesture_detected=gesture if gesture is not None else "NONE",
-        gesture_real=real_gesture,
-        paused=pause,
-        game_over=game.game_over
-    )
 
     if pause:
         game.draw()
