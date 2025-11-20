@@ -2,7 +2,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-df = pd.read_csv("logs/session_20251119_145058.csv")
+# Load CSV
+df = pd.read_csv("logs/session_20251120_143052.csv")
 
 df["time"] = df["timestamp"] - df["timestamp"].iloc[0]
 
