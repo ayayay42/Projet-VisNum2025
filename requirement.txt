@@ -8,6 +8,9 @@ mediapipe>=0.10.0
 pygame>=2.1.0
 # NumPy (commonly used with OpenCV/MediaPipe; some environments require it explicitly)
 numpy>=1.21.0
+#seaborn
+seaborn
+scikit-learn
 
 
 

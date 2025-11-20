@@ -4,7 +4,7 @@ import numpy as np
 from hand_detection.hand_tracker import HandTracker
 from utils.movements import get_direction_from_index, hand_present
 from games.snake import SnakeGame
-from evaluator import Evaluator
+from utils.evaluator import Evaluator
 
 pygame.init()
 screen = pygame.display.set_mode((1200, 600))
