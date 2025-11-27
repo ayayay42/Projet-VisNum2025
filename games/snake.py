@@ -2,6 +2,57 @@ import pygame
 import random
 from .base_game import BaseGame
 from utils.movements import detect_open_hand
+from utils.leaderboard import Leaderboard
+
+def render_wrapped_text(text, font, color, max_width, line_spacing=4):
+    """
+    Return a surface containing the wrapped text.
+    - text: string (can contain spaces and '\n' for paragraph breaks)
+    - font: pygame Font object
+    - color: (r,g,b)
+    - max_width: max pixel width of the resulting surface
+    """
+    # Split by explicit newlines first to preserve paragraph breaks
+    paragraphs = text.split('\n')
+    if not paragraphs:
+        return None
+
+    lines = []
+    for para in paragraphs:
+        # If paragraph is empty, keep an empty line
+        if not para:
+            lines.append('')
+            continue
+        words = para.split()
+        if not words:
+            lines.append('')
+            continue
+
+        current = words[0]
+        for w in words[1:]:
+            test = current + " " + w
+            test_w, _ = font.size(test)
+            if test_w <= max_width:
+                current = test
+            else:
+                lines.append(current)
+                current = w
+        lines.append(current)
+
+    rendered_lines = [font.render(line, True, color) for line in lines]
+    widths = [surf.get_width() for surf in rendered_lines]
+    heights = [surf.get_height() for surf in rendered_lines]
+    surf_w = max(widths) if widths else 0
+    surf_h = sum(heights) + (len(heights)-1) * line_spacing if heights else 0
+
+    surf = pygame.Surface((surf_w, surf_h), pygame.SRCALPHA)
+    y = 0
+    for r in rendered_lines:
+        surf.blit(r, (0, y))
+        y += r.get_height() + line_spacing
+    return surf
+
+
 
 class SnakeGame(BaseGame):
     def __init__(self, screen):
@@ -70,10 +121,16 @@ class SnakeGame(BaseGame):
 
     def draw(self):
         font = pygame.font.Font(None, 72)
+        lb = Leaderboard()
         self.screen.fill((0, 0, 0))
         self.draw_grid()
         msg_score = font.render(f"Score: {len(self.snake) - 4}", True, (255, 255, 255))
+        raw_leaderboard = lb.get_top(5)
+        leaderboard_lines = [f"{i+1}. {entry['name']} - {entry['score']}" for i, entry in enumerate(raw_leaderboard)]
+        leaderboard_text = "Classement:\n" + "\n".join(leaderboard_lines)
+        msg_leaderboard = render_wrapped_text(leaderboard_text, pygame.font.Font(None, 36), (255, 255, 0), 300)
         self.screen.blit(msg_score, (820, 300))
+        self.screen.blit(msg_leaderboard, (820, 360))
 
         if self.game_over:
             msg = font.render("FIN DU JEU", True, (255, 0, 0))

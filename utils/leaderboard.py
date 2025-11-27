@@ -44,6 +44,15 @@ class Leaderboard:
             "score": int(score),
             "date": datetime.utcnow().isoformat() + "Z"
         }
+        for e in self._entries:
+            if e.get("name") == entry["name"] and e.get("score", 0) < entry["score"]:
+                e["score"] = entry["score"]
+                e["date"] = entry["date"]
+                self._entries.sort(key=lambda e: e["score"], reverse=True)
+                self._save()
+                return
+            if e.get("name") == entry["name"] and e.get("score", 0) > entry["score"]:
+                return   
         self._entries.append(entry)
         self._entries.sort(key=lambda e: e["score"], reverse=True)
         self._save()

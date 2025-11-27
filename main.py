@@ -148,6 +148,7 @@ def render_wrapped_text(text, font, color, max_width, line_spacing=4):
         y += r.get_height() + line_spacing
     return surf
 
+
 cap = cv2.VideoCapture(0)
 
 player_name = welcome_screen(cap)
