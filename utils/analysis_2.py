@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.metrics import confusion_matrix, classification_report
 
-df = pd.read_csv("logs/session_20251119_145058.csv")
+df = pd.read_csv("logs/session_20251120_141424.csv")
 
 # ======================================================
 # 1. Sélection des frames réellement évaluables

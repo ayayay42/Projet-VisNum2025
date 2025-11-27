@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.metrics import confusion_matrix, classification_report
 
-df = pd.read_csv("logs/spirale_droite_enzo.csv")
+df = pd.read_csv("logs/session_20251120_141424.csv")
 
 # ========== CLEANING ==========
 # Remove frames where real gesture is NONE, unless you want to evaluate pauses

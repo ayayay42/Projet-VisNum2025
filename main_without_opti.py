@@ -145,7 +145,13 @@ while running:
     if not game.game_over:
         is_hand = hand_present(landmarks)
 
-        if not is_hand:
+        evaluator.log_frame(
+            hand_detected=hand_present(landmarks),
+            gesture_detected=gesture,
+            paused=pause,
+            game_over=game.game_over)
+
+        if not hand_present(landmarks):
             pause = True
         else:
             pause = False

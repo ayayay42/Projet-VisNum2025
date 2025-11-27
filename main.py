@@ -3,6 +3,7 @@ import pygame
 import numpy as np
 from hand_detection.hand_tracker import HandTracker
 from utils.movements import get_direction_from_index, hand_present
+from utils.leaderboard import Leaderboard
 from games.snake import SnakeGame
 from utils.evaluator import Evaluator
 
@@ -54,6 +55,10 @@ def welcome_screen(cap, cam_size=(360, 240)):
     Returns when gesture == 'RIGHT' or exits on quit.
     """
     clock = pygame.time.Clock()
+
+    input_text = ""
+    input_active = True
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -61,11 +66,38 @@ def welcome_screen(cap, cam_size=(360, 240)):
                 cap.release()
                 cv2.destroyAllWindows()
                 exit()
+            if event.type == pygame.KEYDOWN and input_active:
+                if event.key == pygame.K_BACKSPACE:
+                    input_text = input_text[:-1]
+                elif event.key == pygame.K_RETURN:
+                    input_active = False
+                else:
+                    # append printable character
+                    if event.unicode.isprintable():
+                        input_text += event.unicode
 
         landmarks, gesture, cam_surf = get_camera_data(cap, cam_size)
 
         screen.fill((30, 30, 30))
-        title = font.render("Bienvenue au jeu du serpent", True, (255, 255, 255))
+
+        if input_active:
+            prompt = font.render("Entrez votre nom puis appuyez sur Entrée :", True, (255, 255, 255))
+            input_box_font = pygame.font.Font(None, 56)
+            input_surf = input_box_font.render(input_text or "_", True, (255, 255, 255))
+
+            screen.blit(prompt, (100, 160))
+            pygame.draw.rect(screen, (50, 50, 50), (100, 220, 600, 70))
+            screen.blit(input_surf, (110, 230))
+
+            # preview camera while typing
+            if cam_surf:
+                screen.blit(cam_surf, (820, 20))
+
+            pygame.display.flip()
+            clock.tick(30)
+            continue
+
+        title = font.render(f"Bienvenue au jeu du serpent, {input_text}", True, (255, 255, 255))
         subtitle = font.render("Pointez l'index vers la droite pour commencer", True, (0, 255, 0))
         screen.blit(title, (100, 200))
         screen.blit(subtitle, (100, 300))
@@ -77,7 +109,7 @@ def welcome_screen(cap, cam_size=(360, 240)):
         clock.tick(30)
 
         if gesture == "RIGHT":
-            return
+            return input_text
 
 def render_wrapped_text(text, font, color, max_width, line_spacing=4):
     """
@@ -116,12 +148,14 @@ def render_wrapped_text(text, font, color, max_width, line_spacing=4):
         y += r.get_height() + line_spacing
     return surf
 
+
 cap = cv2.VideoCapture(0)
 
-welcome_screen(cap)
+player_name = welcome_screen(cap)
 
 game = SnakeGame(screen)
 evaluator = Evaluator()
+lb = Leaderboard()
 
 # Game loop
 clock = pygame.time.Clock()
@@ -198,6 +232,15 @@ while running:
 
     game.update(gesture)
     game.draw()
+
+    # add score once when game becomes over
+    if game.game_over and not prev_game_over_state:
+        player = player_name if player_name else "Anonymous"
+        score = max(0, len(game.snake) - 4)
+        lb.add(player, score)
+
+    # update persistent previous state
+    prev_game_over_state = game.game_over
 
     if landmarks is not None:
         prev_game_over = game.game_over
