@@ -1,8 +1,17 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import sys
+import os
 
-df = pd.read_csv("logs/session_20251119_145058.csv")
+if len(sys.argv) < 2:
+        print("missing file name")
+        sys.exit(1)
+
+filename = sys.argv[1]
+filepath = os.path.join("logs", filename + ".csv")
+
+df = pd.read_csv(filepath)
 
 df["time"] = df["timestamp"] - df["timestamp"].iloc[0]
 
@@ -15,7 +24,7 @@ sns.barplot(x=gesture_percent.values, y=gesture_percent.index)
 plt.title("Gesture Detection Frequency (%)")
 plt.xlabel("Percentage (%)")
 plt.ylabel("Gesture")
-plt.savefig("plots/gesture_frequency_percent.png")
+plt.savefig(f"plots/gesture_frequency_percent_spirale_{filename}.png")
 
 
 # CONFUSION MATRIX (gesture vs real gesture)
@@ -31,7 +40,10 @@ if "gesture_real" in df.columns:
         "UP", "DOWN", "LEFT", "RIGHT", "NONE"
     ])
 
-    cm_normalized = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis] * 100  # in percent
+    cm = cm.astype(float)
+    row_sums = cm.sum(axis=1, keepdims=True)
+    cm_normalized = np.divide(cm, row_sums, out=np.zeros_like(cm), where=row_sums != 0) * 100
+
     
     plt.figure(figsize=(6, 5))
     sns.heatmap(cm_normalized, annot=True, fmt=".1f", cmap="Blues",
@@ -40,4 +52,4 @@ if "gesture_real" in df.columns:
     plt.title("Confusion Matrix (Predicted vs Real Gestures)")
     plt.xlabel("Predicted Gesture")
     plt.ylabel("Real Gesture")
-    plt.savefig("plots/confusion_matrix_normalized.png")
+    plt.savefig(f"plots/confusion_matrix_normalized_{filename}.png")
