@@ -24,7 +24,7 @@ sns.barplot(x=gesture_percent.values, y=gesture_percent.index)
 plt.title("Gesture Detection Frequency (%)")
 plt.xlabel("Percentage (%)")
 plt.ylabel("Gesture")
-plt.savefig(f"plots/gesture_frequency_percent_spirale_{filename}.png")
+plt.savefig(f"plots/percents/gesture_frequency_percent_spirale_{filename}.png")
 
 
 # CONFUSION MATRIX (gesture vs real gesture)
@@ -52,4 +52,4 @@ if "gesture_real" in df.columns:
     plt.title("Confusion Matrix (Predicted vs Real Gestures)")
     plt.xlabel("Predicted Gesture")
     plt.ylabel("Real Gesture")
-    plt.savefig(f"plots/confusion_matrix_normalized_{filename}.png")
+    plt.savefig(f"plots/matrix/confusion_matrix_normalized_{filename}.png")
